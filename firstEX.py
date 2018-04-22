@@ -9,9 +9,10 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-
+client.load
 @client.event
 async def on_message(message):
+    print(message.content)
     if message.content.startswith('!test'):
         counter = 0
         tmp = await client.send_message(message.channel, 'Calculating messages...')
@@ -24,4 +25,4 @@ async def on_message(message):
         await asyncio.sleep(5)
         await client.send_message(message.channel, 'Done sleeping')
 
-client.run('token')
+client.run('NDM1MDg4ODAxMDQwMTcxMDA4.DbT_5g.o64wiVzlu638vIBmgIglmyQLIqs')
