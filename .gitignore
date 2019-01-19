@@ -1,0 +1,6 @@
+custom.ini
+.env
+.vscode
+__pycache__
+*.pyc
+test_code
