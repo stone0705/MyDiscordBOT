@@ -20,6 +20,18 @@ def get_speed_str(event_id):
         return_str = '這個活動不是排名活動'
     return return_str
 
+def get_ranking_status(event_id):
+    ranking = mltd_api.get_last_rank(event_id)
+    return_str = ''
+    if ranking:
+        for key in ranking:
+            score = ranking[key]['score']
+            update_time = ranking[key]['summaryTime'].strftime("%Y-%m-%d %H:%M:%S")
+            return_str += '{}名 分數:{} 更新時間:{}\n'.format(key, score, update_time)
+    else:
+        return_str = '這個活動不是排名活動'
+    return return_str
+
 class mltd_bot(object):
     def __init__(self, bot):
         self.bot = bot
@@ -30,6 +42,13 @@ class mltd_bot(object):
         info_str = get_info_str(event_id)
         speed = get_speed_str(event_id)
         await self.bot.say('{}\n{}'.format(info_str, speed))
+
+    @commands.command(name='排行', aliases=['排名'])
+    async def get_rank(self):
+        event_id = mltd_api.get_last_event_id()
+        info_str = get_info_str(event_id)
+        r = get_ranking_status(event_id)
+        await self.bot.say('{}\n{}'.format(info_str, r))
     
 
 def setup(bot):

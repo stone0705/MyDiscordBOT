@@ -120,6 +120,7 @@ def save_data_job():
             save_event_ranking(event_id)
             save_event_info(event_id)
             logger.info('save mltd data complete')
+            sleep(60)
         sleep(30)
 
 def thread_save_data():
