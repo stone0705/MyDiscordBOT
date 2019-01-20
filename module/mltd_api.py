@@ -62,7 +62,7 @@ def calculate_speed(event_id, interval):
     data = get_json(json_path)
     speed_dict = {}
     for rank in data[event_id]:
-        if len(data[event_id][rank]) > 2:
+        if len(data[event_id][rank]) >= 2:
             now_score = data[event_id][rank][-1]['score']
             last_score = data[event_id][rank][-2]['score']
             now_time = parse(data[event_id][rank][-1]['summaryTime']).timestamp()
@@ -120,7 +120,7 @@ def save_event_info(event_id):
 
 def save_data_job():
     while(True):
-        if (int(datetime.now().strftime('%M')) % 10) == 0:
+        if (int(datetime.now().strftime('%M')) % 10) == 5:
             save_event_list()
             event_id = get_last_event_id()
             save_event_ranking(event_id)
@@ -133,15 +133,3 @@ def thread_save_data():
     job = threading.Thread(target=save_data_job)
     job.start()
     logger.info('start save mltd data job')
-
-
-
-if __name__ == '__main__':
-    event_id = get_last_event_id()
-    #save_event_list()
-    #save_event_ranking(33)
-    #save_event_info(33)
-    calculate_remaining_time(event_id)
-    
-
-
