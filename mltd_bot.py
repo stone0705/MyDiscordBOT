@@ -32,6 +32,18 @@ def get_ranking_status(event_id):
         return_str = '這個活動不是排名活動'
     return return_str
 
+def get_remaining_status(event_id):
+    remaining_time = mltd_api.calculate_remaining_time(event_id)
+    return_str = ''
+    if remaining_time < 0:
+        return_str = '活動已經結束了'
+    else:
+        hours = int(remaining_time / 3600)
+        mins = int((remaining_time - (hours * 3600)) / 60)
+        secs = int(remaining_time - (hours * 3600) - (mins * 60))
+        return_str = '活動剩下 {} 小時 {} 分 {} 秒'.format(hours, mins, secs)
+    return return_str
+
 class mltd_bot(object):
     def __init__(self, bot):
         self.bot = bot
@@ -48,6 +60,13 @@ class mltd_bot(object):
         event_id = mltd_api.get_last_event_id()
         info_str = get_info_str(event_id)
         r = get_ranking_status(event_id)
+        await self.bot.say('{}\n{}'.format(info_str, r))
+
+    @commands.command(name='剩下時間', aliases=['剩下', '剩餘', '還多久', '多久'])
+    async def get_remaining_time(self):
+        event_id = mltd_api.get_last_event_id()
+        info_str = get_info_str(event_id)
+        r = get_remaining_status(event_id)
         await self.bot.say('{}\n{}'.format(info_str, r))
     
 

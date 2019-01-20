@@ -4,3 +4,4 @@ custom.ini
 __pycache__
 *.pyc
 test_code
+test.py

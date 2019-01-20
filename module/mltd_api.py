@@ -80,6 +80,12 @@ def calculate_speed(event_id, interval):
             speed_dict[rank] = speed * 60
     return speed_dict
 
+def calculate_remaining_time(event_id):
+    info = get_event_info(event_id)
+    end_time = info['schedule']['endDate'].replace(tzinfo=timezone.utc)
+    now_time = datetime.now().replace(tzinfo=timezone.utc)
+    return (end_time - now_time).total_seconds()
+
 def save_event_list():
     json_path = get_setting_cfg().get('path', 'event_list')
     r = requests.get('{}/events'.format(api_url))
@@ -132,9 +138,10 @@ def thread_save_data():
 
 if __name__ == '__main__':
     event_id = get_last_event_id()
-    save_event_list()
-    save_event_ranking(33)
-    save_event_info(33)
+    #save_event_list()
+    #save_event_ranking(33)
+    #save_event_info(33)
+    calculate_remaining_time(event_id)
     
 
 
