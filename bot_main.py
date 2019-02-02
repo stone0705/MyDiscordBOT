@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord.voice_client import VoiceClient
 from module.get_cfg import get_api_key
-from module.mltd_api import thread_save_data
+from corntab import thread_save_data
 momoko = commands.Bot(command_prefix=commands.when_mentioned_or('!'))
 
 

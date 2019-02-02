@@ -1,5 +1,6 @@
 import module.mltd_api as mltd_api
 import discord
+import predict_module.predict as predict
 from datetime import timezone
 from discord.ext import commands
 from time import strftime
@@ -44,6 +45,20 @@ def get_remaining_status(event_id):
         return_str = '活動剩下 {} 小時 {} 分 {} 秒'.format(hours, mins, secs)
     return return_str
 
+def get_predict_status(event_id):
+    return_str = ''
+    config = mltd_api.get_mltd_api_config()
+    rank_list = config['monitor_rank']
+    n_step = config['n_step']
+    for rank in rank_list:
+        predict_value = predict.predict(event_id, rank, n_step)
+        if predict_value:
+            return_str += '下{}個時間點{}名的預測分數:{}\n'.format(n_step, rank, ', '.join(predict_value))
+    if return_str == '':
+        return_str = '無法取得預測值，預測器尚未生成'
+    return return_str
+
+
 class mltd_bot(object):
     def __init__(self, bot):
         self.bot = bot
@@ -67,6 +82,13 @@ class mltd_bot(object):
         event_id = mltd_api.get_last_event_id()
         info_str = get_info_str(event_id)
         r = get_remaining_status(event_id)
+        await self.bot.say('{}\n{}'.format(info_str, r))
+
+    @commands.command(name='預測', aliases=['未來'])
+    async def get_predict_rank(self):
+        event_id = mltd_api.get_last_event_id()
+        info_str = get_info_str(event_id)
+        r = get_predict_status(event_id)
         await self.bot.say('{}\n{}'.format(info_str, r))
     
 

@@ -3,6 +3,7 @@ import requests
 import io
 import os
 import threading
+import re
 from time import strftime, sleep, time
 from dateutil.parser import parse
 from datetime import timezone, timedelta, datetime
@@ -13,7 +14,16 @@ api_url = 'https://api.matsurihi.me/mltd/v1/'
 
 logger = get_file_and_stream_logger('discord.mltd_api')
 
-def str_to_datetime(time_str, time_zone=8):
+def get_mltd_api_config():
+    json_path = get_setting_cfg().get('path', 'mltd_config')
+    return get_json(json_path)
+
+def validate_event_id(event_id):
+    pattern = '\d{1,}'
+    if not re.match(pattern, event_id):
+        raise Exception('event_id not match right pattern')
+
+def str_to_datetime(time_str, time_zone=get_setting_cfg().getint('common', 'timezone')):
     dt = parse(time_str)
     local_dt = dt.astimezone(timezone(timedelta(hours=time_zone)))
     return local_dt
@@ -93,10 +103,22 @@ def save_event_list():
     event_list = r.json()
     with io.open(json_path, 'w+', encoding='utf8') as f:
         json.dump(event_list, f, ensure_ascii=False, indent=4)
+    convert_list_to_info()
+
+def convert_list_to_info():
+    event_list = get_event_list()
+    new_data = {}
+    for event in event_list:
+        new_data[event['id']] = event
+    json_path = get_setting_cfg().get('path', 'event_info')
+    with io.open(json_path, 'w+', encoding='utf8') as f:
+        json.dump(new_data, f, ensure_ascii=False, indent=4)
 
 def save_event_ranking(event_id):
+    validate_event_id(event_id)
+    rank_num_list = ','.join(get_mltd_api_config()['monitor_rank'])
     json_path = get_setting_cfg().get('path', 'event_rank')
-    r = requests.get('{}/events/{}/rankings/logs/eventPoint/2500,5000,10000'.format(api_url, event_id))
+    r = requests.get('{}/events/{}/rankings/logs/eventPoint/{}'.format(api_url, event_id, rank_num_list))
     if r.status_code != 200: raise Exception('get event rank fail with code:{}'.format(r.status_code))
     rank_list = r.json()
     new_rank_list = {}
@@ -107,6 +129,7 @@ def save_event_ranking(event_id):
         json.dump(new_rank_list, f, ensure_ascii=False, indent=4)
 
 def save_event_info(event_id):
+    validate_event_id(event_id)
     json_path = get_setting_cfg().get('path', 'event_info')
     r = requests.get('{}/events/{}'.format(api_url, event_id))
     if r.status_code != 200: raise Exception('get event info fail with code:{}'.format(r.status_code))
@@ -117,19 +140,3 @@ def save_event_info(event_id):
     info_list[event_id] = info
     with io.open(json_path, 'w+', encoding='utf8') as f:
         json.dump(info_list, f, ensure_ascii=False, indent=4)
-
-def save_data_job():
-    while(True):
-        if (int(datetime.now().strftime('%M')) % 10) == 5:
-            save_event_list()
-            event_id = get_last_event_id()
-            save_event_ranking(event_id)
-            save_event_info(event_id)
-            logger.info('save mltd data complete')
-            sleep(60)
-        sleep(30)
-
-def thread_save_data():
-    job = threading.Thread(target=save_data_job)
-    job.start()
-    logger.info('start save mltd data job')
