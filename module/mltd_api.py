@@ -5,10 +5,10 @@ import os
 import threading
 import re
 from time import strftime, sleep, time
-from dateutil.parser import parse
-from datetime import timezone, timedelta, datetime
 from module.get_cfg import get_setting_cfg
 from module.log_handler import get_file_and_stream_logger
+from module.time_module import str_to_datetime, str_to_ts
+from datetime import datetime, timezone
 
 api_url = 'https://api.matsurihi.me/mltd/v1/'
 
@@ -22,11 +22,6 @@ def validate_event_id(event_id):
     pattern = '\d{1,}'
     if not re.match(pattern, event_id):
         raise Exception('event_id not match right pattern')
-
-def str_to_datetime(time_str, time_zone=get_setting_cfg().getint('common', 'timezone')):
-    dt = parse(time_str)
-    local_dt = dt.astimezone(timezone(timedelta(hours=time_zone)))
-    return local_dt
 
 def get_json(file_path):
     with io.open(file_path, encoding='utf8') as f:
@@ -56,7 +51,6 @@ def get_event_info(event_id):
 def is_event_has_rank(event_id):
     return get_event_info(event_id)['type'] in [3, 4]
 
-
 def get_last_rank(event_id):
     if not is_event_has_rank(event_id): return None
     json_path = get_setting_cfg().get('path', 'event_rank')
@@ -75,8 +69,8 @@ def calculate_speed(event_id, interval):
         if len(data[event_id][rank]) >= 2:
             now_score = data[event_id][rank][-1]['score']
             last_score = data[event_id][rank][-2]['score']
-            now_time = parse(data[event_id][rank][-1]['summaryTime']).timestamp()
-            last_time = parse(data[event_id][rank][-2]['summaryTime']).timestamp()
+            now_time = str_to_ts(data[event_id][rank][-1]['summaryTime'])
+            last_time = str_to_ts(data[event_id][rank][-2]['summaryTime'])
             speed = (now_score - last_score) / (now_time - last_time)
         else:
             speed_dict[rank] = speed = 0

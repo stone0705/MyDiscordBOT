@@ -51,9 +51,13 @@ def get_predict_status(event_id):
     rank_list = config['monitor_rank']
     n_step = config['n_step']
     for rank in rank_list:
-        predict_value = predict.predict(event_id, rank, n_step)
+        predict_value, predictor_info = predict.predict(event_id, rank, n_step)
         if predict_value:
-            return_str += '下{}個時間點{}名的預測分數:{}\n'.format(n_step, rank, ', '.join(predict_value))
+            return_str += '下{}個時間點{}名的預測分數\n(預測器根據{}時間點 分數變動幅度:{}產生):\n{}\n'.format(n_step, 
+                rank, 
+                predictor_info['last_time'].strftime("%Y-%m-%d %H:%M:%S"), 
+                predictor_info['last_score'], 
+                ', '.join([str(value) for value in predict_value]))
     if return_str == '':
         return_str = '無法取得預測值，預測器尚未生成'
     return return_str

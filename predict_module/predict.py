@@ -1,7 +1,6 @@
 import predict_module.arima_predictor as arima_predictor
 import predict_module.data_module as data_module
 import module.mltd_api as mltd_api
-import threading
 from module.log_handler import get_file_and_stream_logger
 
 logger = get_file_and_stream_logger('discord.predict')
@@ -18,8 +17,7 @@ def save_predictor(event_id, rank_num):
 
 def thread_save_predictor(event_id):
     for rank_num in mltd_api.get_mltd_api_config()['monitor_rank']:
-        job = threading.Thread(target=save_predictor, args=[event_id, rank_num])
-        job.start()
+        save_predictor(event_id, rank_num)
 
 def predict(event_id, rank_num, n_step):
     predictor = arima_predictor.load_predictor(event_id, rank_num)
@@ -30,6 +28,6 @@ def predict(event_id, rank_num, n_step):
         for i in range(len(predict_values)):
             sum_list.append(sum(predict_values[0: i+1]))
         sum_list = [int(last_value + diff) for diff in sum_list]
-        return sum_list
+        return sum_list, predictor.predictor_info
     else:
         return None

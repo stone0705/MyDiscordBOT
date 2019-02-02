@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import json
 import module.mltd_api as mltd_api
+from module.time_module import str_to_datetime
 from module.get_cfg import get_setting_cfg
 
 def get_pandas_data(event_id, rank_num):
@@ -13,7 +14,7 @@ def get_pandas_data(event_id, rank_num):
     for i in range(1, len(rank_data[event_id][rank_num])):
         rank = rank_data[event_id][rank_num]
         score_diff_list.append(rank[i]['score'] - rank[i-1]['score'])
-        time_list.append(rank[i]['summaryTime'])
+        time_list.append(str_to_datetime(rank[i]['summaryTime']))
     return pd.Series(score_diff_list, index=time_list)
 
 def get_data(event_id, rank_num):
