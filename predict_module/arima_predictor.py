@@ -38,7 +38,7 @@ def get_arima_predictor(series):
     return predictor
 
 def get_auto_arima_preditctor(series):
-    predictor = auto_arima(series)
+    predictor = auto_arima(series, error_action='ignore')
     predictor.fit(series)
     predictor_info = {
         'training_length': len(series),

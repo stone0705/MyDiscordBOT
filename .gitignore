@@ -3,6 +3,7 @@ custom.ini
 .vscode
 __pycache__
 *.pyc
+*.bat
+*.sh
 test_code
 test*.py
-run.bat
