@@ -16,7 +16,7 @@ def save_predictor(event_id, rank_num):
     
 
 def thread_save_predictor(event_id):
-    for rank_num in mltd_api.get_mltd_api_config()['monitor_rank']:
+    for rank_num in mltd_api.get_monitor_rank():
         save_predictor(event_id, rank_num)
 
 def predict(event_id, rank_num, n_step):

@@ -4,6 +4,7 @@ import predict_module.predict as predict
 from datetime import timezone
 from discord.ext import commands
 from time import strftime
+from module.get_cfg import get_setting_cfg
 
 def get_info_str(event_id):
     info = mltd_api.get_event_info(event_id)
@@ -47,9 +48,8 @@ def get_remaining_status(event_id):
 
 def get_predict_status(event_id):
     return_str = ''
-    config = mltd_api.get_mltd_api_config()
-    rank_list = config['monitor_rank']
-    n_step = config['n_step']
+    rank_list = mltd_api.get_monitor_rank()
+    n_step = get_setting_cfg().getint('ARIMA', 'n_step')
     for rank in rank_list:
         predict_value, predictor_info = predict.predict(event_id, rank, n_step)
         if predict_value:

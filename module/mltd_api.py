@@ -14,9 +14,8 @@ api_url = 'https://api.matsurihi.me/mltd/v1/'
 
 logger = get_file_and_stream_logger('discord.mltd_api')
 
-def get_mltd_api_config():
-    json_path = get_setting_cfg().get('path', 'mltd_config')
-    return get_json(json_path)
+def get_monitor_rank():
+    return get_setting_cfg().get('monitor', 'monitor_rank').split(',')
 
 def validate_event_id(event_id):
     pattern = '\d{1,}'
@@ -34,7 +33,7 @@ def get_event_id(event_name):
     event_list = get_event_list()
     for event in event_list:
         if event['name'] == event_name:
-            return event['id']
+            return str(event['id'])
     return None
 
 def get_last_event_id():
@@ -110,7 +109,7 @@ def convert_list_to_info():
 
 def save_event_ranking(event_id):
     validate_event_id(event_id)
-    rank_num_list = ','.join(get_mltd_api_config()['monitor_rank'])
+    rank_num_list = ','.join(get_monitor_rank())
     json_path = get_setting_cfg().get('path', 'event_rank')
     r = requests.get('{}/events/{}/rankings/logs/eventPoint/{}'.format(api_url, event_id, rank_num_list))
     if r.status_code != 200: raise Exception('get event rank fail with code:{}'.format(r.status_code))
