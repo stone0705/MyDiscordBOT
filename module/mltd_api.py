@@ -10,7 +10,7 @@ from module.log_handler import get_file_and_stream_logger
 from module.time_module import str_to_datetime, str_to_ts
 from datetime import datetime, timezone
 
-api_url = 'https://api.matsurihi.me/mltd/v1/'
+api_url = 'https://api.matsurihi.me/mltd/v1'
 
 logger = get_file_and_stream_logger('discord.mltd_api')
 
@@ -48,7 +48,7 @@ def get_event_info(event_id):
     return info
 
 def is_event_has_rank(event_id):
-    return get_event_info(event_id)['type'] in [3, 4]
+    return get_event_info(event_id)['type'] in [3, 4, 11]
 
 def get_last_rank(event_id):
     if not is_event_has_rank(event_id): return None

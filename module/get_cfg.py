@@ -10,6 +10,9 @@ def get_setting_cfg():
     return config
 
 
-def get_api_key():
+def get_api_key(bot_name=''):
     config = get_setting_cfg()
-    return config.get('discord', 'token')
+    if bot_name:
+        return config.get(bot_name, 'token')
+    else:
+        return config.get('discord', 'token')

@@ -5,6 +5,7 @@ from datetime import timezone
 from discord.ext import commands
 from time import strftime
 from module.get_cfg import get_setting_cfg
+from datetime import timedelta
 
 def get_info_str(event_id):
     info = mltd_api.get_event_info(event_id)
@@ -49,51 +50,57 @@ def get_remaining_status(event_id):
 def get_predict_status(event_id):
     return_str = ''
     rank_list = mltd_api.get_monitor_rank()
+    info = mltd_api.get_event_info(event_id)
+    begin = info['schedule']['beginDate']
+    end = info['schedule']['endDate']
+    diff = timedelta(minutes=30)
+    last_step = int((end - begin) / diff)
     n_step = get_setting_cfg().getint('ARIMA', 'n_step')
     for rank in rank_list:
-        predict_value, predictor_info = predict.predict(event_id, rank, n_step)
+        predict_value, predictor_info = predict.predict(event_id, rank, last_step)
         if predict_value:
-            return_str += '下{}個時間點{}名的預測分數\n(預測器根據{}時間點 分數變動幅度:{}產生):\n{}\n'.format(n_step, 
+            return_str += '下{}個時間點{}名的預測分數\n(預測器根據{}時間點 分數變動幅度:{}產生):\n{}\n{}\n'.format(n_step, 
                 rank, 
                 predictor_info['last_time'].strftime("%Y-%m-%d %H:%M:%S"), 
                 predictor_info['last_score'], 
-                ', '.join([str(value) for value in predict_value]))
+                ', '.join([str(value) for value in predict_value[:n_step]]),
+                '最終結果:{}'.format(predict_value[-1]))
     if return_str == '':
         return_str = '無法取得預測值，預測器尚未生成'
     return return_str
 
 
-class mltd_bot(object):
+class mltd_bot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(name='速度', aliases=['時速'])
-    async def get_speed(self):
+    async def get_speed(self, ctx):
         event_id = mltd_api.get_last_event_id()
         info_str = get_info_str(event_id)
         speed = get_speed_str(event_id)
-        await self.bot.say('{}\n{}'.format(info_str, speed))
+        await ctx.send('{}\n{}'.format(info_str, speed))
 
     @commands.command(name='排行', aliases=['排名'])
-    async def get_rank(self):
+    async def get_rank(self, ctx):
         event_id = mltd_api.get_last_event_id()
         info_str = get_info_str(event_id)
         r = get_ranking_status(event_id)
-        await self.bot.say('{}\n{}'.format(info_str, r))
+        await ctx.send('{}\n{}'.format(info_str, r))
 
     @commands.command(name='剩下時間', aliases=['剩下', '剩餘', '還多久', '多久'])
-    async def get_remaining_time(self):
+    async def get_remaining_time(self, ctx):
         event_id = mltd_api.get_last_event_id()
         info_str = get_info_str(event_id)
         r = get_remaining_status(event_id)
-        await self.bot.say('{}\n{}'.format(info_str, r))
+        await ctx.send('{}\n{}'.format(info_str, r))
 
     @commands.command(name='預測', aliases=['未來'])
-    async def get_predict_rank(self):
+    async def get_predict_rank(self, ctx):
         event_id = mltd_api.get_last_event_id()
         info_str = get_info_str(event_id)
         r = get_predict_status(event_id)
-        await self.bot.say('{}\n{}'.format(info_str, r))
+        await ctx.send('{}\n{}'.format(info_str, r))
     
 
 def setup(bot):
